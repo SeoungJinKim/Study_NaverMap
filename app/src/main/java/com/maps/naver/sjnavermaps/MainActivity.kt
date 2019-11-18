@@ -3,9 +3,9 @@ package com.maps.naver.sjnavermaps
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
-import com.naver.maps.map.MapFragment
-import com.naver.maps.map.NaverMap
-import com.naver.maps.map.OnMapReadyCallback
+import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.*
+import com.naver.maps.map.overlay.Marker
 import org.jetbrains.anko.toast
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -20,8 +20,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as MapFragment?
-            ?: MapFragment.newInstance().also {
-                supportFragmentManager.beginTransaction().add(R.id.map, it).commit()
+            ?: run {
+                val options = NaverMapOptions().camera(
+                    CameraPosition(
+                        NaverMap.DEFAULT_CAMERA_POSITION.target, NaverMap.DEFAULT_CAMERA_POSITION.zoom, 30.0, 45.0)
+                )
+                MapFragment.newInstance(options).also {
+                    supportFragmentManager.beginTransaction().add(R.id.map, it).commit()
+                }
             }
         mapFragment.getMapAsync(this)
     }
@@ -41,6 +47,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         naverMap.setOnMapLongClickListener { _, coord ->
             toast(getString(R.string.format_map_long_click, coord.latitude, coord.longitude))
+            Marker().apply {
+                position = LatLng(coord.latitude, coord.longitude)
+                map = naverMap
+            }
         }
     }
 }
